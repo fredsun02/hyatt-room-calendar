@@ -1,5 +1,5 @@
 HYATT ROOM CALENDAR
-Quick start | Extension 1.1.2
+Quick start | Extension 1.2.0
 
 Check room inventory and points rates by arrival date on Hyatt.com.
 
@@ -27,10 +27,13 @@ Open a hotel’s room-selection page on Hyatt.com. Click Room calendar in the lo
 
 The hotel code is usually filled in from the page address. For example, /shop/rooms/shaum uses the code shaum.
 
+To check a different hotel, type part of its name, city or code in Find hotel, then choose a result. The first search downloads Hyatt’s hotel list, which the extension keeps for seven days.
+
 The form opens with 365 days, 3 parallel requests and no delay. For your first scan, use a short date range and a slower pace:
 
 Setting            Example                  What it controls
 -----------------  -----------------------  -------------------------------------------------------------
+Find hotel         Park Hyatt Tokyo         Searches Hyatt’s hotel list and fills in the hotel code.
 Hotel code         shaum                    The hotel to search.
 Start date         Your first arrival date  The first date in the calendar.
 Days               31                       How many arrival dates to check.
@@ -146,9 +149,13 @@ The selected dates already have fresh results. No new cash requests are needed.
 
 The extension could not confirm the room’s award category. Cash results and points prices may still be available. Try Points → Refresh rates when Hyatt is responding normally.
 
+“Hotel list unavailable”
+
+Hyatt did not return its hotel list, often because it is blocking requests. Enter the five-character code from the hotel’s page address instead, for example shaum in /shop/rooms/shaum. The extension waits a minute before requesting the list again.
+
 Hyatt blocks requests or shows an error page
 
 Auto-resume may recover a cash scan. If requests remain blocked, click Stop and try later. Cookie resets cannot resolve every block.
 
-Hyatt Room Calendar 1.1.2 · Guide updated October 17, 2026.
+Hyatt Room Calendar 1.2.0 · Guide updated October 17, 2026.
 Not affiliated with Hyatt.

@@ -75,7 +75,7 @@
   <a class="skip" href="#guide">Skip to guide</a>
   <div class="layout">
     <aside aria-label="Guide navigation">
-      <p class="brand">Hyatt Room Calendar<span>Extension 1.1.2</span></p>
+      <p class="brand">Hyatt Room Calendar<span>Extension 1.2.0</span></p>
       <nav aria-label="Contents">
         <a href="#install"><span>01</span>Install</a>
         <a href="#scan"><span>02</span>Run your first scan</a>
@@ -89,7 +89,7 @@
     </aside>
     <main id="guide">
       <header>
-        <div class="eyebrow">Hyatt Room Calendar · Version 1.1.2</div>
+        <div class="eyebrow">Hyatt Room Calendar · Version 1.2.0</div>
         <h1>Quick start</h1>
         <p class="lead">Check room inventory and points rates by arrival date on Hyatt.com.</p>
         <p>One extension handles scanning, saved results and cookie resets. You do not need Tampermonkey, a separate Cookie Helper, or a terminal running <code>server.mjs</code>.</p>
@@ -113,11 +113,13 @@
         <h2><span class="number">02</span>Run your first scan</h2>
         <p>Open a hotel’s room-selection page on Hyatt.com. Click <strong>Room calendar</strong> in the lower-left corner, then choose <strong>Cash</strong>.</p>
         <p>The hotel code is usually filled in from the page address. For example, <code>/shop/rooms/shaum</code> uses the code <code>shaum</code>.</p>
+        <p>To check a different hotel, type part of its name, city or code in <strong>Find hotel</strong>, then choose a result. The first search downloads Hyatt’s hotel list, which the extension keeps for seven days.</p>
         <p>The form opens with 365 days, 3 parallel requests and no delay. For your first scan, use a short date range and a slower pace:</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th scope="col">Setting</th><th scope="col">Example</th><th scope="col">What it controls</th></tr></thead>
             <tbody>
+              <tr><td>Find hotel</td><td>Park Hyatt Tokyo</td><td>Searches Hyatt’s hotel list and fills in the hotel code.</td></tr>
               <tr><td>Hotel code</td><td><code>shaum</code></td><td>The hotel to search.</td></tr>
               <tr><td>Start date</td><td>Your first arrival date</td><td>The first date in the calendar.</td></tr>
               <tr><td>Days</td><td>31</td><td>How many arrival dates to check.</td></tr>
@@ -225,11 +227,13 @@
         <p>The selected dates already have fresh results. No new cash requests are needed.</p>
         <h3>“Room verification failed” or “Unconfirmed”</h3>
         <p>The extension could not confirm the room’s award category. Cash results and points prices may still be available. Try <strong>Points → Refresh rates</strong> when Hyatt is responding normally.</p>
+        <h3>“Hotel list unavailable”</h3>
+        <p>Hyatt did not return its hotel list, often because it is blocking requests. Enter the five-character code from the hotel’s page address instead, for example <code>shaum</code> in <code>/shop/rooms/shaum</code>. The extension waits a minute before requesting the list again.</p>
         <h3>Hyatt blocks requests or shows an error page</h3>
         <p>Auto-resume may recover a cash scan. If requests remain blocked, click <strong>Stop</strong> and try later. Cookie resets cannot resolve every block.</p>
       </section>
 
-      <footer>Hyatt Room Calendar 1.1.2 · Guide updated October 17, 2026.<br>Not affiliated with Hyatt.</footer>
+      <footer>Hyatt Room Calendar 1.2.0 · Guide updated October 17, 2026.<br>Not affiliated with Hyatt.</footer>
     </main>
   </div>
 </body>

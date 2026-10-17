@@ -6,6 +6,7 @@ A Chrome extension that checks a Hyatt hotel's room inventory, cash rates and po
 
 ## Features
 
+- **Find hotel.** Type part of a hotel's name, city or code and pick a result to fill in the hotel code. On a Chinese Hyatt page, both Chinese and English names match. The hotel list is downloaded on your first search and kept for 7 days.
 - **Cash calendar.** Shows rooms left and the lowest cash rate for every room type and arrival date. Stays can be 1–7 nights.
 - **Points calendar.** Shows the points tier and award availability for standard rooms, club rooms, suites and upgrades. A date's points rate is shown even when no award is available.
 - **Room classification.**
@@ -16,10 +17,10 @@ A Chrome extension that checks a Hyatt hotel's room inventory, cash rates and po
 
 ## Install
 
-1. Download `Hyatt-Room-Calendar-v1.1.2.zip` from [Releases](https://github.com/fredsun02/hyatt-room-calendar/releases/latest). Extract it to a folder you intend to keep. Alternatively, clone this repository.
+1. Download the ZIP from the [latest release](https://github.com/fredsun02/hyatt-room-calendar/releases/latest). Extract it to a folder you intend to keep. Alternatively, clone this repository.
 2. Open `chrome://extensions/` and turn on **Developer mode**.
 3. Click **Load unpacked** and select the `hyatt-extension` folder.
-4. Open a hotel's room-selection page on hyatt.com. Click **Room calendar** in the lower-left corner.
+4. Open any page on hyatt.com, ideally a hotel's room-selection page. Click **Room calendar** in the lower-left corner, then use **Find hotel** or the hotel code filled in from the page.
 
 Requires Chrome 130 or later. The Quick Start ([text](Hyatt-Room-Calendar-Quick-Start.txt); open the `.html` version locally for the formatted guide) explains every control and color.
 

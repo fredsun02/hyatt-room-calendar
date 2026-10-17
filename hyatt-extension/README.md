@@ -1,6 +1,6 @@
 # Hyatt Room Calendar
 
-Version 1.1.2 · English interface
+Version 1.2.0 · English interface
 
 View room availability and points rates on Hyatt.com.
 
@@ -36,6 +36,10 @@ Room names come from Hyatt and follow the language returned by the site. The ext
 
 Results are cached for 6 hours. A new scan checks missing or expired dates.
 
+## Find a hotel
+
+Type part of a hotel’s name, city or code in **Find hotel** and choose a result to fill in **Hotel code**. The first search downloads Hyatt’s hotel list from its Explore Hotels page, in the language of the current Hyatt page; the list is kept for 7 days. On a non-English page, English hotel names also match. Partner hotels such as Mr & Mrs Smith are not listed. If the list cannot be loaded, enter the five-character code instead.
+
 ## Resume a scan
 
 With **Auto-resume** enabled, blocked requests trigger a cookie reset after progress is saved. The page reloads twice, then scanning resumes. The second reload waits at least 5 seconds after the page loads; another navigation restarts the timer.
@@ -52,7 +56,7 @@ If you already use `hryv-store`, enable **Connect to hryv-store** in Settings. G
 
 ## Storage and permissions
 
-Results stay in the extension’s browser storage. Clearing Hyatt site data does not remove them. Normal and incognito windows share cached results but keep separate resume tasks.
+Results stay in the extension’s browser storage. Clearing Hyatt site data does not remove them. Normal and incognito windows share cached results but keep separate resume tasks. The hotel list is stored the same way and is not included in backups.
 
 The extension uses:
 

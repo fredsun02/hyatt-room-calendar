@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Hyatt Room Calendar
 // @namespace    hyatt-room-year
-// @version      0.13.2
+// @version      0.14.0
 // @description  Room availability and points rates on Hyatt.com.
 // @match        https://www.hyatt.com/*
 // @run-at       document-idle
@@ -423,6 +423,76 @@
     return proof;
   }
 
+  // Hotel finder. Hyatt's Explore Hotels page embeds every property in `window.STORE`; one fetch is cached for a week.
+  // Entries: [code, name, city, province, country, brand, award category, English URL slug].
+  const HOTELS_TTL_MS = 7 * 24 * 3600 * 1000;
+  const HOTELS_RETRY_MS = 60000;
+  const hotelsKey = lang => `${CACHE_PREFIX}hotels|${lang}`;
+  const validHotels = (h, lang) => h && h.lang === lang && Array.isArray(h.list) && h.list.length > 0 &&
+    Number.isFinite(h.ts) && Date.now() >= h.ts && Date.now() - h.ts < HOTELS_TTL_MS;
+  async function fetchHotels(lang) {
+    const r = await fetch(`/${lang}/explore-hotels`, { headers: { Accept: 'text/html' }, credentials: 'include' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const html = await r.text();
+    const m = /window\.STORE\s*=\s*\{/.exec(html);
+    if (!m) throw new Error('hotel list not found; Hyatt may have blocked the request');
+    // Take the object literal up to its matching brace, skipping braces inside strings.
+    const begin = m.index + m[0].length - 1;
+    let depth = 0, inString = false, end = -1;
+    for (let i = begin; i < html.length; i++) {
+      const ch = html.charCodeAt(i);
+      if (inString) { if (ch === 92) i++; else if (ch === 34) inString = false; }
+      else if (ch === 34) inString = true;
+      else if (ch === 123) depth++;
+      else if (ch === 125 && --depth === 0) { end = i + 1; break; }
+    }
+    if (end < 0) throw new Error('hotel list is incomplete');
+    // The store is JSON apart from a few `new Date(…)` values.
+    const store = JSON.parse(html.slice(begin, end).replace(/new Date\(("(?:[^"\\]|\\.)*"|-?\d+)\)/g, '$1'));
+    const list = [];
+    (function walk(o) {
+      if (!o || typeof o !== 'object') return;
+      if (typeof o.spiritCode !== 'string') { Object.values(o).forEach(walk); return; }
+      // Partner (e.g. Mr & Mrs Smith), externally booked and unbookable properties do not use the room-rate service.
+      if (!/^[a-z0-9]{5}$/.test(o.spiritCode) || o.propertyType !== 'HYATT' || o.booking?.isExternal || o.openStatus === 'NOT_BOOKABLE') return;
+      const loc = o.location || {};
+      list.push([o.spiritCode, String(o.name || o.spiritCode), loc.city || '', loc.stateProvince?.label || '',
+        loc.country?.label || '', o.brand?.label || '', o.awardCategory?.key || '',
+        String(o.url || '').split('/').pop().replace(/^[a-z0-9]{5}-/, '').replace(/-/g, ' ')]);
+    })(store.properties);
+    if (!list.length) throw new Error('hotel list is empty');
+    return { ts: Date.now(), lang, list };
+  }
+  const fold = s => String(s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  const indexHotels = list => list.map(h => {
+    const hay = fold([h[0], h[1], h[2], h[3], h[4], h[5], h[7]].join(' '));
+    return { h, hay, words: hay.split(/[^\p{L}\p{N}]+/u), name: fold(h[1]), city: fold(h[2]), slug: fold(h[7]) };
+  });
+  // Every query word must match a word prefix, a substring, or (for Chinese) all of its characters in any order.
+  function searchHotels(index, query, limit = 8) {
+    const q = fold(query).trim();
+    const tokens = q.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+    if (!tokens.length) return [];
+    const hits = [];
+    for (const x of index) {
+      let score = 0;
+      for (const t of tokens) {
+        if (x.words.some(w => w.startsWith(t))) score += 3;
+        else if (x.hay.includes(t)) score += 2;
+        else if (/\p{Script=Han}/u.test(t) && [...t].every(ch => x.hay.includes(ch))) score += 1;
+        else { score = -1; break; }
+      }
+      if (score < 0) continue;
+      if (x.h[0] === q) score += 100;
+      if (x.name === q) score += 50;
+      if (x.name.startsWith(q) || x.slug.startsWith(q)) score += 10;
+      if (x.city === q) score += 5;
+      hits.push([score, x.h]);
+    }
+    return hits.sort((a, b) => b[0] - a[0] || a[1][1].length - b[1][1].length || a[1][1].localeCompare(b[1][1]))
+      .slice(0, limit).map(([, h]) => h);
+  }
+
   const CSS = `
   .hryv-fab{position:fixed;left:16px;bottom:16px;z-index:99998;background:#0D2D52;color:#fff;border:none;border-radius:20px;
     padding:8px 14px;font:600 13px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;cursor:pointer;
@@ -440,6 +510,16 @@
   .hryv-controls input,.hryv-controls select{padding:4px 6px;border:1px solid #ccc;border-radius:5px;font-size:13px;color:#222;background:#fff}
   .hryv-controls input[type=number]{width:70px}
   .hryv-controls input.hryv-code{width:80px}
+  .hryv-controls input.hryv-find{width:220px}
+  .hryv-findbox{position:relative}
+  .hryv-suggest{position:absolute;left:0;top:100%;z-index:2;margin-top:3px;width:340px;max-width:80vw;max-height:300px;overflow-y:auto;
+    background:#fff;border:1px solid #ccc;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .hryv-suggest[hidden]{display:none}
+  .hryv-suggest-item{display:flex;flex-direction:column;gap:1px;padding:6px 9px;cursor:pointer}
+  .hryv-suggest-item b{font-weight:600;color:#222}
+  .hryv-suggest-item span{font-size:11px;color:#666}
+  .hryv-suggest-item.on,.hryv-suggest-item:hover{background:#e3ecf7}
+  .hryv-suggest-msg{padding:6px 9px;font-size:12px;color:#666}
   .hryv-btn{background:#0D2D52;color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
   .hryv-btn.secondary{background:#fff;color:#0D2D52;border:1px solid #0D2D52}
   .hryv-btn:disabled{opacity:.45;cursor:not-allowed}
@@ -549,6 +629,13 @@
     head.append(h3, x);
 
     const inSpirit = el('input', 'hryv-code'); inSpirit.value = det.spirit; inSpirit.placeholder = 'e.g. hfegh';
+    const inFind = el('input', 'hryv-find'); inFind.type = 'search'; inFind.placeholder = 'Hotel name, city or code';
+    inFind.autocomplete = 'off'; inFind.spellcheck = false;
+    const findList = el('div', 'hryv-suggest'); findList.id = 'hryv-suggest'; findList.hidden = true;
+    findList.setAttribute('role', 'listbox');
+    inFind.setAttribute('role', 'combobox'); inFind.setAttribute('aria-autocomplete', 'list');
+    inFind.setAttribute('aria-controls', findList.id); inFind.setAttribute('aria-expanded', 'false');
+    const lbFind = el('div', 'hryv-findbox'); lbFind.append(labelled('Find hotel', inFind), findList);
     const selRoom = el('select');
     const inStart = el('input'); inStart.type = 'date'; inStart.value = todayLocal();
     const inDays = el('input'); inDays.type = 'number'; inDays.min = 1; inDays.max = 400; inDays.value = 365;
@@ -588,7 +675,7 @@
     const btnPts = el('button', 'hryv-btn', 'Load rates');
     const btnPtsReload = el('button', 'hryv-btn secondary', 'Refresh rates');
     controls.append(
-      labelled('Hotel code', inSpirit), lbRoom, lbCat, labelled('Start date', inStart),
+      lbFind, labelled('Hotel code', inSpirit), lbRoom, lbCat, labelled('Start date', inStart),
       labelled('Days', inDays), lbLos, labelled('Adults', selAdults),
       lbConc, lbInterval, lbAuto, btnScan, btnStop, btnCsv, btnClear, btnPts, btnPtsReload, btnBackup
     );
@@ -812,7 +899,7 @@
 
       summary.innerHTML = '';
       tableWrap.innerHTML = '';
-      if (!c.spirit) { summary.textContent = 'Enter a five-character hotel code, e.g. hfegh.'; return; }
+      if (!c.spirit) { summary.textContent = 'Find a hotel or enter its five-character code, e.g. hfegh.'; return; }
       if (!P) { summary.textContent = 'Click Load rates to check points prices and award availability.'; return; }
       const name = (PTS_CATS.find(x => x[0] === cat) || [cat, cat])[1];
       const line = el('div');
@@ -845,7 +932,7 @@
     const pointsConfigKey = c => [c.spirit, c.adults, c.start, c.n].join('|');
     async function loadPoints(force, retryRoomProof = false) {
       const c = cfg();
-      if (!/^[a-z0-9]{5}$/.test(c.spirit)) { ptsStatus.textContent = 'Enter a hotel code with five letters or numbers.'; return; }
+      if (!/^[a-z0-9]{5}$/.test(c.spirit)) { ptsStatus.textContent = 'Find a hotel or enter a five-character hotel code.'; return; }
       const requestKey = pointsConfigKey(c);
       if (state.ptsLoading && pointsLoadingKey === requestKey && !force) return;
       const seq = ++pointsSeq;
@@ -1031,7 +1118,7 @@
 
       summary.innerHTML = '';
       if (!c.spirit) {
-        summary.textContent = 'Enter a five-character hotel code, e.g. hfegh.';
+        summary.textContent = 'Find a hotel or enter its five-character code, e.g. hfegh.';
       } else if (!room) {
         summary.textContent = `${scanned}/${dates.length} dates checked. Select a room after scanning.`;
       } else {
@@ -1222,8 +1309,9 @@
 
     async function runScan(auto) {
       const c = cfg();
-      if (!/^[a-z0-9]{5}$/.test(c.spirit)) { status.textContent = 'Enter a hotel code with five letters or numbers.'; return; }
-      const lockable = [inSpirit, inStart, inDays, selLos, selAdults, selConc, inInterval, inAuto];
+      if (!/^[a-z0-9]{5}$/.test(c.spirit)) { status.textContent = 'Find a hotel or enter a five-character hotel code.'; return; }
+      const lockable = [inFind, inSpirit, inStart, inDays, selLos, selAdults, selConc, inInterval, inAuto];
+      closeFind();
       Object.assign(state, {
         running: true, reloading: false, keepResume: false, ctrl: new AbortController(), done: 0, failed: 0, total: 0, tSum: 0,
         interval: c.interval, conc: c.conc, cooldownMsg: '', recoveryError: '',
@@ -1395,6 +1483,101 @@
     tabPts.addEventListener('click', () => setMode('pts'));
     btnPts.addEventListener('click', () => loadPoints(false));
     btnPtsReload.addEventListener('click', () => loadPoints(true));
+
+    // Find hotel: the catalog is fetched on first search, and choosing a result fills Hotel code.
+    let hotels = null, hotelIndex = [], hotelsLoading = null, hotelsFailedAt = 0, hotelsError = '';
+    let findResults = [], findActive = -1, findTimer = 0;
+    const hotelLang = () => (/^[a-z]{2}-[A-Z]{2}$/.test(state.lang) ? state.lang : 'en-US');
+    const hotelDetail = h => [h[0], [h[2], h[4]].filter(Boolean).join(', '), h[6] && 'Category ' + h[6]].filter(Boolean).join(' · ');
+    function useHotels(h) { hotels = h; hotelIndex = indexHotels(h.list); }
+    function cachedHotels() {
+      const lang = hotelLang();
+      if (!validHotels(hotels, lang)) {
+        const saved = kv.get(hotelsKey(lang));
+        if (validHotels(saved, lang)) useHotels(saved);
+      }
+      return validHotels(hotels, lang);
+    }
+    function ensureHotels() {
+      if (cachedHotels()) return Promise.resolve();
+      if (hotelsLoading) return hotelsLoading;
+      if (Date.now() - hotelsFailedAt < HOTELS_RETRY_MS) return Promise.reject(new Error(hotelsError));
+      showFind([], 'Loading Hyatt’s hotel list…');
+      hotelsLoading = fetchHotels(hotelLang()).then(h => { useHotels(h); kv.set(hotelsKey(h.lang), h); }, e => {
+        hotelsFailedAt = Date.now(); hotelsError = e.message; throw e;
+      }).finally(() => { hotelsLoading = null; });
+      return hotelsLoading;
+    }
+    function highlightFind() {
+      findList.querySelectorAll('.hryv-suggest-item').forEach((o, i) => {
+        o.classList.toggle('on', i === findActive); o.setAttribute('aria-selected', String(i === findActive));
+        if (i === findActive) o.scrollIntoView({ block: 'nearest' });
+      });
+      if (findActive >= 0) inFind.setAttribute('aria-activedescendant', 'hryv-opt-' + findActive);
+      else inFind.removeAttribute('aria-activedescendant');
+    }
+    function showFind(results, message) {
+      findResults = results; findActive = results.length ? 0 : -1;
+      findList.replaceChildren();
+      if (message) findList.append(el('div', 'hryv-suggest-msg', message));
+      results.forEach((h, i) => {
+        const opt = el('div', 'hryv-suggest-item'); opt.id = 'hryv-opt-' + i; opt.setAttribute('role', 'option');
+        opt.append(el('b', null, h[1]), el('span', null, hotelDetail(h)));
+        opt.addEventListener('click', () => pickHotel(h));
+        findList.append(opt);
+      });
+      highlightFind();
+      findList.hidden = !message && !results.length;
+      inFind.setAttribute('aria-expanded', String(!findList.hidden));
+    }
+    function closeFind() {
+      clearTimeout(findTimer);
+      findList.hidden = true; inFind.setAttribute('aria-expanded', 'false'); inFind.removeAttribute('aria-activedescendant');
+    }
+    function syncFindName() {
+      const code = inSpirit.value.trim().toLowerCase();
+      const h = cachedHotels() ? hotels.list.find(x => x[0] === code) : null;
+      inFind.value = h ? h[1] : '';
+      inFind.title = h ? hotelDetail(h) : '';
+    }
+    function pickHotel(h) {
+      closeFind();
+      inFind.value = h[1]; inFind.title = hotelDetail(h);
+      if (inSpirit.value.trim().toLowerCase() === h[0]) return;
+      inSpirit.value = h[0];
+      inSpirit.dispatchEvent(new Event('change'));
+    }
+    async function updateFind() {
+      const q = inFind.value.trim();
+      if (!q || inFind.disabled) { closeFind(); return; }
+      let error = '';
+      try { await ensureHotels(); } catch (e) { error = e.message; }
+      // A newer keystroke has its own lookup; a blurred or locked box shows nothing.
+      if (inFind.value.trim() !== q) return;
+      if (document.activeElement !== inFind || inFind.disabled) { closeFind(); return; }
+      if (error) { showFind([], `Hotel list unavailable (${error}). Enter the five-character code instead.`); return; }
+      const results = searchHotels(hotelIndex, q);
+      showFind(results, results.length ? '' : 'No matching hotel.');
+    }
+    inFind.addEventListener('input', () => { clearTimeout(findTimer); findTimer = setTimeout(updateFind, 150); });
+    inFind.addEventListener('focus', () => inFind.select());
+    inFind.addEventListener('blur', closeFind);
+    // Keep focus in the input while a result is clicked or the list is scrolled.
+    findList.addEventListener('mousedown', e => e.preventDefault());
+    inFind.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (!findResults.length || findList.hidden) return;
+        e.preventDefault();
+        findActive = (findActive + (e.key === 'ArrowDown' ? 1 : -1) + findResults.length) % findResults.length;
+        highlightFind();
+      } else if (e.key === 'Enter' && !findList.hidden && findResults[findActive]) {
+        e.preventDefault(); pickHotel(findResults[findActive]);
+      } else if (e.key === 'Escape' && !findList.hidden) {
+        e.preventDefault(); closeFind();
+      }
+    });
+    inSpirit.addEventListener('change', syncFindName);
+
     [inSpirit, selAdults].forEach(e => e.addEventListener('change', () => {
       state.pts = null; state.ptsErr = ''; refreshCatOptions();
       render();
@@ -1409,11 +1592,13 @@
     overlay.addEventListener('click', e => { if (e.target === overlay) hide(); });
 
     reloadCache();
+    syncFindName();
     if (!prefill && cfg().spirit) loadPoints(false);
 
     restoreUI = p => {
       if (state.running || state.starting) return;
       applyPrefill(p);
+      syncFindName();
       state.pts = null;
       reloadCache();
       setMode('cash');
