@@ -1,0 +1,154 @@
+HYATT ROOM CALENDAR
+Quick start | Extension 1.1.2
+
+Check room inventory and points rates by arrival date on Hyatt.com.
+
+One extension handles scanning, saved results and cookie resets. You do not need Tampermonkey, a separate Cookie Helper, or a terminal running server.mjs.
+
+This guide covers installation in Chrome 130 or later.
+
+1. Install
+----------
+
+1. Extract the extension ZIP into a folder you intend to keep.
+2. Enter chrome://extensions/ in Chrome’s address bar.
+3. Turn on Developer mode in the upper-right corner.
+4. Click Load unpacked. Select the hyatt-extension folder containing manifest.json.
+5. Check that Hyatt Room Calendar is enabled, then reload any open Hyatt tabs.
+
+If you used the old userscript, export any results you want to keep before disabling it. Disable the old Hyatt userscript and separate Cookie Helper once the extension is installed.
+
+For private browsing, open the extension’s Details page and enable Allow in Incognito.
+
+2. Run your first scan
+----------------------
+
+Open a hotel’s room-selection page on Hyatt.com. Click Room calendar in the lower-left corner, then choose Cash.
+
+The hotel code is usually filled in from the page address. For example, /shop/rooms/shaum uses the code shaum.
+
+The form opens with 365 days, 3 parallel requests and no delay. For your first scan, use a short date range and a slower pace:
+
+Setting            Example                  What it controls
+-----------------  -----------------------  -------------------------------------------------------------
+Hotel code         shaum                    The hotel to search.
+Start date         Your first arrival date  The first date in the calendar.
+Days               31                       How many arrival dates to check.
+Nights             1                        The length of each stay.
+Adults             1                        The number of adult guests.
+Parallel requests  1                        How many dates to query at once.
+Delay (sec)        3                        The pause between requests.
+Auto-resume        On                       Save progress and attempt recovery when requests are blocked.
+
+Click Start scan. As results arrive, choose a room from the Room menu or click its row in the table. The scan collects all room types returned by Hyatt; selecting a room changes the calendar view.
+
+Days and Nights are different. “31 days” with “2 nights” checks 31 possible arrival dates, each for a two-night stay.
+
+3. Read the cash calendar
+-------------------------
+
+Each cell is an arrival date. Columns are weeks, with Monday at the top and Sunday at the bottom. Hover over a cell to see its date and details.
+
+- The number is the room inventory Hyatt returned for the selected room and the full stay.
+- The background color is the standard room points tier for the arrival night, even when you select a suite.
+- A faded, striped cell with 0 means no cash inventory was returned for that room and stay.
+- · means the date has not been checked, or its cached result has expired. ! means the request failed.
+- Gray means the points price is unavailable. Check the number for cash inventory.
+
+Tier  Name            Color
+----  --------------  -----------
+1     Super off-peak  Dark green
+2     Off-peak        Light green
+3     Standard        Pale yellow
+4     Peak            Orange
+5     Super peak      Red
+
+Click an available date to open Hyatt’s booking page. The table below the calendar counts available arrival dates for each room type.
+
+Room labels
+
+- ◆ Standard room: a standard room award was found for this room on a sampled date.
+- ★ Standard suite: Hyatt’s suite-upgrade data identifies it as a standard suite.
+- Unconfirmed: there is not enough evidence to classify the room. It may still qualify for a standard room award.
+
+Names such as “Deluxe” do not determine award eligibility. Room names follow the language returned by Hyatt.
+
+4. Check points rates
+---------------------
+
+1. Choose the Points tab.
+2. Select an Award type and your date range.
+3. Use Load rates if results have not loaded. Use Refresh rates to request an update.
+4. Hover over a date for its points price. Click an available date to review the stay on Hyatt.com.
+
+A solid colored cell indicates an award was returned as available. A faded, striped cell has a points rate but no award availability was returned. A dashed empty cell has not been loaded.
+
+A points price does not guarantee an award room. Points availability is checked for one-night stays, independently of the Nights setting in the Cash tab.
+
+5. Stop and resume
+------------------
+
+Results are saved automatically in the extension’s browser storage. A new scan reuses results less than six hours old and checks missing or expired dates.
+
+With Auto-resume enabled, blocked cash requests can trigger this sequence:
+
+1. Save the results and scan progress.
+2. Clear Hyatt cookies and reload the page.
+3. Wait at least five seconds after the page loads, then reload a second time.
+4. Read the saved results and continue the remaining dates.
+
+Keep the Hyatt tab open while recovery runs. Cookie resets can sign you out of Hyatt. If progress cannot be saved, the extension cancels the automatic reload.
+
+Clearing Hyatt cookies does not clear your scan results. A successful new query replaces the result for that date; it does not erase the other dates.
+
+Click Stop to end the scan and cancel automatic resumption. Click Start scan later to continue using any results that are still fresh. If Hyatt keeps blocking requests, the scanner may pause before retrying.
+
+6. Back up your results
+-----------------------
+
+Open Settings from the calendar or extension menu.
+
+- Export backup saves a JSON file with room and points data for all saved hotels.
+- To restore it, stop active scans, click Choose JSON file under Import backup, and select the file. Reload your Hyatt tabs afterward.
+
+Importing keeps newer saved results and does not start a scan. Use Export CSV in the Cash tab when you want a spreadsheet export; use a JSON backup to restore data to the extension.
+
+Moving from the userscript
+
+Update the old userscript to version 0.13.0 or later and use its Export backup button. Disable the userscript, then import the JSON file in the extension’s Settings.
+
+Using the old local store
+
+Leave Connect to hryv-store off for normal use. It is optional. Only enable it if you want to connect to the old local service; that service must be running. After enabling it, reload a Hyatt tab and select a hotel to load its saved records.
+
+7. Update the extension
+-----------------------
+
+1. Export a JSON backup.
+2. Replace the extension files in the same installation folder.
+3. Open chrome://extensions/ and click Reload on the Hyatt Room Calendar card.
+4. Reload your Hyatt tabs.
+
+Keep the same installation folder when updating. Uninstalling the extension removes its saved data.
+
+8. Troubleshooting
+------------------
+
+The Room calendar button is missing
+
+Check that the extension is enabled and has access to Hyatt.com, then reload the Hyatt page. In an incognito window, also check Allow in Incognito.
+
+“Done. All selected dates are cached.”
+
+The selected dates already have fresh results. No new cash requests are needed.
+
+“Room verification failed” or “Unconfirmed”
+
+The extension could not confirm the room’s award category. Cash results and points prices may still be available. Try Points → Refresh rates when Hyatt is responding normally.
+
+Hyatt blocks requests or shows an error page
+
+Auto-resume may recover a cash scan. If requests remain blocked, click Stop and try later. Cookie resets cannot resolve every block.
+
+Hyatt Room Calendar 1.1.2 · Guide updated October 17, 2026.
+Not affiliated with Hyatt.

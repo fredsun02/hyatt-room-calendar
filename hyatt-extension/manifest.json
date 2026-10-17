@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Hyatt Room Calendar",
+  "version": "1.1.2",
+  "description": "Room availability and points rates on Hyatt.com.",
+  "minimum_chrome_version": "130",
+  "permissions": ["cookies", "storage", "unlimitedStorage", "webNavigation", "alarms"],
+  "host_permissions": ["*://*.hyatt.com/*"],
+  "optional_host_permissions": ["http://127.0.0.1/*"],
+  "incognito": "split",
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_title": "Hyatt Room Calendar", "default_popup": "popup.html" },
+  "options_ui": { "page": "options.html", "open_in_tab": true },
+  "content_scripts": [
+    { "matches": ["https://www.hyatt.com/*"], "js": ["platform.js"], "run_at": "document_start", "all_frames": false },
+    { "matches": ["https://www.hyatt.com/*"], "js": ["scanner.js"], "run_at": "document_idle", "all_frames": false }
+  ]
+}

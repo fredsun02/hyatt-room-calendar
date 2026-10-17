@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A quick start guide to installing Hyatt Room Calendar, scanning dates, reading results, and saving a backup.">
+  <title>Hyatt Room Calendar · Quick start</title>
+  <style>
+    :root { color-scheme: light; --ink:#21354b; --muted:#617083; --line:#dde4ea; --accent:#155b94; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:24px; }
+    body { margin:0; color:var(--ink); background:#fff; font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:var(--accent); text-underline-offset:3px; }
+    a:focus-visible { outline:3px solid #8cbce2; outline-offset:4px; }
+    .skip { position:fixed; top:-80px; left:16px; background:#fff; padding:8px 16px; z-index:2; }
+    .skip:focus { top:12px; }
+    .layout { max-width:1140px; margin:0 auto; padding:52px 32px 72px; display:grid; grid-template-columns:210px minmax(0,1fr); gap:64px; }
+    aside { position:sticky; top:40px; align-self:start; }
+    .brand { margin:0 0 24px; font-size:16px; line-height:1.4; font-weight:700; letter-spacing:-.2px; }
+    .brand span { display:block; color:var(--muted); font-size:12px; font-weight:400; margin-top:8px; letter-spacing:0; }
+    nav a { display:flex; gap:12px; padding:7px 0; font-size:14px; color:var(--muted); text-decoration:none; }
+    nav a:hover { color:var(--accent); }
+    nav span { color:#8a96a3; font-variant-numeric:tabular-nums; }
+    .eyebrow { color:var(--accent); font-size:12px; font-weight:650; letter-spacing:1.3px; text-transform:uppercase; }
+    h1 { font-size:44px; line-height:1.15; letter-spacing:-1.4px; margin:12px 0 18px; }
+    .lead { color:#4b6074; font-size:19px; line-height:1.65; margin:0 0 20px; }
+    h2 { font-size:25px; line-height:1.3; letter-spacing:-.55px; margin:0 0 18px; }
+    h2 .number { display:block; margin-bottom:8px; font:600 12px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:1px; color:var(--accent); }
+    h3 { font-size:16px; line-height:1.5; margin:24px 0 8px; }
+    p { margin:0 0 15px; }
+    section { border-top:1px solid var(--line); margin-top:36px; padding-top:30px; }
+    ol,ul { padding-left:23px; margin:14px 0 20px; }
+    li { margin:7px 0; padding-left:3px; }
+    code { font: .88em/1.5 ui-monospace,SFMono-Regular,Consolas,monospace; background:#f1f4f7; padding:2px 5px; border-radius:4px; overflow-wrap:anywhere; }
+    .note { border-left:3px solid #9bbdd6; padding:12px 16px; background:#f5f8fb; margin:20px 0; font-size:14px; }
+    .note p:last-child { margin-bottom:0; }
+    .muted { color:var(--muted); font-size:14px; }
+    .table-wrap { overflow-x:auto; margin:18px 0 22px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; }
+    th { text-align:left; font-weight:600; color:#4e6375; background:#f5f7f9; }
+    th,td { padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+    td:first-child { font-weight:550; }
+    .symbol { display:inline-block; min-width:20px; text-align:center; }
+    footer { margin-top:40px; border-top:1px solid var(--line); padding-top:20px; font-size:12px; color:var(--muted); }
+    @media(max-width:850px) {
+      .layout { display:block; max-width:760px; padding:28px 22px 48px; }
+      aside { position:static; border-bottom:1px solid var(--line); padding-bottom:20px; margin-bottom:30px; }
+      .brand { margin-bottom:14px; }
+      .brand span { display:inline; margin-left:8px; }
+      nav { display:flex; flex-wrap:wrap; gap:0 20px; }
+      nav a { font-size:13px; padding:4px 0; }
+      nav span { display:none; }
+      h1 { font-size:36px; }
+      h2 { font-size:23px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      @page { size:A4; margin:19mm; }
+      body { font-size:10pt; line-height:1.55; }
+      .layout { display:block; padding:0; max-width:none; }
+      aside,.skip { display:none; }
+      h1 { font-size:28pt; }
+      h2 { font-size:17pt; }
+      .lead { font-size:12pt; }
+      section { margin-top:22px; padding-top:18px; }
+      h2,h3 { break-after:avoid; }
+      table,.note { break-inside:avoid; }
+      th,td { padding:6px 8px; }
+      table,.note,.muted { font-size:9pt; }
+      a { color:inherit; text-decoration:none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#guide">Skip to guide</a>
+  <div class="layout">
+    <aside aria-label="Guide navigation">
+      <p class="brand">Hyatt Room Calendar<span>Extension 1.1.2</span></p>
+      <nav aria-label="Contents">
+        <a href="#install"><span>01</span>Install</a>
+        <a href="#scan"><span>02</span>Run your first scan</a>
+        <a href="#cash"><span>03</span>Read the cash calendar</a>
+        <a href="#points"><span>04</span>Check points rates</a>
+        <a href="#resume"><span>05</span>Stop and resume</a>
+        <a href="#backup"><span>06</span>Back up your results</a>
+        <a href="#update"><span>07</span>Update the extension</a>
+        <a href="#help"><span>08</span>Troubleshooting</a>
+      </nav>
+    </aside>
+    <main id="guide">
+      <header>
+        <div class="eyebrow">Hyatt Room Calendar · Version 1.1.2</div>
+        <h1>Quick start</h1>
+        <p class="lead">Check room inventory and points rates by arrival date on Hyatt.com.</p>
+        <p>One extension handles scanning, saved results and cookie resets. You do not need Tampermonkey, a separate Cookie Helper, or a terminal running <code>server.mjs</code>.</p>
+        <p class="muted">This guide covers installation in Chrome 130 or later.</p>
+      </header>
+
+      <section id="install">
+        <h2><span class="number">01</span>Install</h2>
+        <ol>
+          <li>Extract the extension ZIP into a folder you intend to keep.</li>
+          <li>Enter <code>chrome://extensions/</code> in Chrome’s address bar.</li>
+          <li>Turn on <strong>Developer mode</strong> in the upper-right corner.</li>
+          <li>Click <strong>Load unpacked</strong>. Select the <code>hyatt-extension</code> folder containing <code>manifest.json</code>.</li>
+          <li>Check that <strong>Hyatt Room Calendar</strong> is enabled, then reload any open Hyatt tabs.</li>
+        </ol>
+        <p>If you used the old userscript, export any results you want to keep before disabling it. Disable the old Hyatt userscript and separate Cookie Helper once the extension is installed.</p>
+        <p class="muted">For private browsing, open the extension’s <strong>Details</strong> page and enable <strong>Allow in Incognito</strong>.</p>
+      </section>
+
+      <section id="scan">
+        <h2><span class="number">02</span>Run your first scan</h2>
+        <p>Open a hotel’s room-selection page on Hyatt.com. Click <strong>Room calendar</strong> in the lower-left corner, then choose <strong>Cash</strong>.</p>
+        <p>The hotel code is usually filled in from the page address. For example, <code>/shop/rooms/shaum</code> uses the code <code>shaum</code>.</p>
+        <p>The form opens with 365 days, 3 parallel requests and no delay. For your first scan, use a short date range and a slower pace:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Setting</th><th scope="col">Example</th><th scope="col">What it controls</th></tr></thead>
+            <tbody>
+              <tr><td>Hotel code</td><td><code>shaum</code></td><td>The hotel to search.</td></tr>
+              <tr><td>Start date</td><td>Your first arrival date</td><td>The first date in the calendar.</td></tr>
+              <tr><td>Days</td><td>31</td><td>How many arrival dates to check.</td></tr>
+              <tr><td>Nights</td><td>1</td><td>The length of each stay.</td></tr>
+              <tr><td>Adults</td><td>1</td><td>The number of adult guests.</td></tr>
+              <tr><td>Parallel requests</td><td>1</td><td>How many dates to query at once.</td></tr>
+              <tr><td>Delay (sec)</td><td>3</td><td>The pause between requests.</td></tr>
+              <tr><td>Auto-resume</td><td>On</td><td>Save progress and attempt recovery when requests are blocked.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Click <strong>Start scan</strong>. As results arrive, choose a room from the <strong>Room</strong> menu or click its row in the table. The scan collects all room types returned by Hyatt; selecting a room changes the calendar view.</p>
+        <p class="note"><strong>Days and Nights are different.</strong> “31 days” with “2 nights” checks 31 possible arrival dates, each for a two-night stay.</p>
+      </section>
+
+      <section id="cash">
+        <h2><span class="number">03</span>Read the cash calendar</h2>
+        <p>Each cell is an arrival date. Columns are weeks, with Monday at the top and Sunday at the bottom. Hover over a cell to see its date and details.</p>
+        <ul>
+          <li><strong>The number</strong> is the room inventory Hyatt returned for the selected room and the full stay.</li>
+          <li><strong>The background color</strong> is the standard room points tier for the arrival night, even when you select a suite.</li>
+          <li><strong>A faded, striped cell with 0</strong> means no cash inventory was returned for that room and stay.</li>
+          <li><strong>·</strong> means the date has not been checked, or its cached result has expired. <strong>!</strong> means the request failed.</li>
+          <li><strong>Gray</strong> means the points price is unavailable. Check the number for cash inventory.</li>
+        </ul>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Tier</th><th scope="col">Name</th><th scope="col">Color</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Super off-peak</td><td>Dark green</td></tr>
+              <tr><td>2</td><td>Off-peak</td><td>Light green</td></tr>
+              <tr><td>3</td><td>Standard</td><td>Pale yellow</td></tr>
+              <tr><td>4</td><td>Peak</td><td>Orange</td></tr>
+              <tr><td>5</td><td>Super peak</td><td>Red</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Click an available date to open Hyatt’s booking page. The table below the calendar counts <strong>available arrival dates</strong> for each room type.</p>
+        <h3>Room labels</h3>
+        <ul>
+          <li><strong>◆ Standard room:</strong> a standard room award was found for this room on a sampled date.</li>
+          <li><strong>★ Standard suite:</strong> Hyatt’s suite-upgrade data identifies it as a standard suite.</li>
+          <li><strong>Unconfirmed:</strong> there is not enough evidence to classify the room. It may still qualify for a standard room award.</li>
+        </ul>
+        <p class="muted">Names such as “Deluxe” do not determine award eligibility. Room names follow the language returned by Hyatt.</p>
+      </section>
+
+      <section id="points">
+        <h2><span class="number">04</span>Check points rates</h2>
+        <ol>
+          <li>Choose the <strong>Points</strong> tab.</li>
+          <li>Select an <strong>Award type</strong> and your date range.</li>
+          <li>Use <strong>Load rates</strong> if results have not loaded. Use <strong>Refresh rates</strong> to request an update.</li>
+          <li>Hover over a date for its points price. Click an available date to review the stay on Hyatt.com.</li>
+        </ol>
+        <p>A solid colored cell indicates an award was returned as available. A faded, striped cell has a points rate but no award availability was returned. A dashed empty cell has not been loaded.</p>
+        <p class="note"><strong>A points price does not guarantee an award room.</strong> Points availability is checked for one-night stays, independently of the Nights setting in the Cash tab.</p>
+      </section>
+
+      <section id="resume">
+        <h2><span class="number">05</span>Stop and resume</h2>
+        <p>Results are saved automatically in the extension’s browser storage. A new scan reuses results less than six hours old and checks missing or expired dates.</p>
+        <p>With <strong>Auto-resume</strong> enabled, blocked cash requests can trigger this sequence:</p>
+        <ol>
+          <li>Save the results and scan progress.</li>
+          <li>Clear Hyatt cookies and reload the page.</li>
+          <li>Wait at least five seconds after the page loads, then reload a second time.</li>
+          <li>Read the saved results and continue the remaining dates.</li>
+        </ol>
+        <p>Keep the Hyatt tab open while recovery runs. Cookie resets can sign you out of Hyatt. If progress cannot be saved, the extension cancels the automatic reload.</p>
+        <p><strong>Clearing Hyatt cookies does not clear your scan results.</strong> A successful new query replaces the result for that date; it does not erase the other dates.</p>
+        <p>Click <strong>Stop</strong> to end the scan and cancel automatic resumption. Click <strong>Start scan</strong> later to continue using any results that are still fresh. If Hyatt keeps blocking requests, the scanner may pause before retrying.</p>
+      </section>
+
+      <section id="backup">
+        <h2><span class="number">06</span>Back up your results</h2>
+        <p>Open <strong>Settings</strong> from the calendar or extension menu.</p>
+        <ul>
+          <li><strong>Export backup</strong> saves a JSON file with room and points data for all saved hotels.</li>
+          <li>To restore it, stop active scans, click <strong>Choose JSON file</strong> under Import backup, and select the file. Reload your Hyatt tabs afterward.</li>
+        </ul>
+        <p>Importing keeps newer saved results and does not start a scan. Use <strong>Export CSV</strong> in the Cash tab when you want a spreadsheet export; use a JSON backup to restore data to the extension.</p>
+        <h3>Moving from the userscript</h3>
+        <p>Update the old userscript to version 0.13.0 or later and use its <strong>Export backup</strong> button. Disable the userscript, then import the JSON file in the extension’s Settings.</p>
+        <h3>Using the old local store</h3>
+        <p>Leave <strong>Connect to hryv-store</strong> off for normal use. It is optional. Only enable it if you want to connect to the old local service; that service must be running. After enabling it, reload a Hyatt tab and select a hotel to load its saved records.</p>
+      </section>
+
+      <section id="update">
+        <h2><span class="number">07</span>Update the extension</h2>
+        <ol>
+          <li>Export a JSON backup.</li>
+          <li>Replace the extension files in the same installation folder.</li>
+          <li>Open <code>chrome://extensions/</code> and click <strong>Reload</strong> on the Hyatt Room Calendar card.</li>
+          <li>Reload your Hyatt tabs.</li>
+        </ol>
+        <p>Keep the same installation folder when updating. Uninstalling the extension removes its saved data.</p>
+      </section>
+
+      <section id="help">
+        <h2><span class="number">08</span>Troubleshooting</h2>
+        <h3>The Room calendar button is missing</h3>
+        <p>Check that the extension is enabled and has access to Hyatt.com, then reload the Hyatt page. In an incognito window, also check <strong>Allow in Incognito</strong>.</p>
+        <h3>“Done. All selected dates are cached.”</h3>
+        <p>The selected dates already have fresh results. No new cash requests are needed.</p>
+        <h3>“Room verification failed” or “Unconfirmed”</h3>
+        <p>The extension could not confirm the room’s award category. Cash results and points prices may still be available. Try <strong>Points → Refresh rates</strong> when Hyatt is responding normally.</p>
+        <h3>Hyatt blocks requests or shows an error page</h3>
+        <p>Auto-resume may recover a cash scan. If requests remain blocked, click <strong>Stop</strong> and try later. Cookie resets cannot resolve every block.</p>
+      </section>
+
+      <footer>Hyatt Room Calendar 1.1.2 · Guide updated October 17, 2026.<br>Not affiliated with Hyatt.</footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hyatt Room Calendar — Settings</title><link rel="stylesheet" href="ui.css"></head>
+<body><main>
+  <div class="version" id="version"></div><h1>Settings</h1>
+  <section><h2>Calendar</h2>
+    <p>Open a Hyatt hotel page and click <strong>Room calendar</strong> in the lower-left corner.</p>
+    <button class="primary" id="open">Open Hyatt</button>
+    <p class="muted">For incognito windows, enable “Allow in incognito” in this extension’s browser settings.</p>
+    <small>If you used the previous version, disable the Hyatt userscript and separate Cookie Helper, then reload your Hyatt tabs.</small>
+  </section>
+  <section><h2>Data</h2>
+    <p>Results are saved in this browser. Clearing Hyatt cookies keeps them; uninstalling the extension removes them.</p>
+    <button id="export">Export backup</button>
+    <p>Import backup<br><label class="file-button" for="import">Choose JSON file</label><input id="import" type="file" accept=".json,application/json" hidden></p>
+    <small>Stop active scans before importing. Records are merged by date, keeping the newer result. Importing does not start a scan. Reload Hyatt tabs when finished.</small>
+    <details><summary>Moving from the userscript</summary>
+      <p>Update the existing userscript to 0.13.0 or later and export a backup from its calendar. Disable the userscript, then import that JSON file here.</p>
+    </details>
+  </section>
+  <section><h2>Local backup</h2>
+    <label><input id="local-store" type="checkbox">Connect to hryv-store</label>
+    <p class="muted">Optional. Connects to the local service at 127.0.0.1:8787 to reuse older data or share results between browser profiles. Enabling it requests local access permission.</p>
+    <small>After enabling, reload a Hyatt tab and select a hotel to load its saved results.</small>
+  </section>
+  <p id="status" role="status" aria-live="polite"></p>
+  <p class="muted">Not affiliated with Hyatt.</p>
+</main><script type="module" src="options.js"></script></body></html>
