@@ -39,13 +39,13 @@
     error() { return [...failures.values()].join('; '); },
     async snapshot() {
       if (!(await storage.flush())) throw new Error(storage.error());
-      const all = await chrome.storage.local.get(null);
-      return Object.fromEntries(Object.entries(all).filter(([key]) => isVisible(key)));
+      return chrome.storage.local.get((await chrome.storage.local.getKeys()).filter(isVisible));
     },
   };
   const platform = globalThis.__HRYV_PLATFORM = {
     storage, remoteEnabled: false,
-    ready: chrome.storage.local.get(null).then(all => {
+    // Read only the keys this page uses; background collection keeps a large schedule in the same storage.
+    ready: chrome.storage.local.getKeys().then(keys => chrome.storage.local.get([...keys.filter(isVisible), 'extension:local-store'])).then(all => {
       for (const [key, value] of Object.entries(all)) if (isVisible(key)) cache[cacheKey(key)] = value;
       platform.remoteEnabled = all['extension:local-store'] === true;
     }),
@@ -55,6 +55,7 @@
       return send({ type: 'HRYV_STORE', method, key, body });
     },
     openSettings() { return send({ type: 'HRYV_SETTINGS' }); },
+    async isCollectorTab() { return (await send({ type: 'HRYV_COLLECTOR', action: 'hello' }))?.active === true; },
     onOpen(open) {
       chrome.runtime.onMessage.addListener((request, sender, respond) => {
         if (request?.type !== 'HRYV_OPEN' || sender.id !== chrome.runtime.id) return;

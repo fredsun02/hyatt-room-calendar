@@ -1,5 +1,5 @@
 HYATT ROOM CALENDAR
-Quick start | Extension 1.2.0
+Quick start | Extension 1.5.0
 
 Check room inventory and points rates by arrival date on Hyatt.com.
 
@@ -55,7 +55,8 @@ Each cell is an arrival date. Columns are weeks, with Monday at the top and Sund
 - The number is the room inventory Hyatt returned for the selected room and the full stay.
 - The background color is the standard room points tier for the arrival night, even when you select a suite.
 - A faded, striped cell with 0 means no cash inventory was returned for that room and stay.
-- · means the date has not been checked, or its cached result has expired. ! means the request failed.
+- An italic number with a small dot was checked more than six hours ago. Hover over it to see when; Start scan checks it again.
+- · means the date has not been checked. ! means the request failed.
 - Gray means the points price is unavailable. Check the number for cash inventory.
 
 Tier  Name            Color
@@ -88,7 +89,26 @@ A solid colored cell indicates an award was returned as available. A faded, stri
 
 A points price does not guarantee an award room. Points availability is checked for one-night stays, independently of the Nights setting in the Cash tab.
 
-5. Stop and resume
+5. Compare hotels in a city
+---------------------------
+
+Choose the City tab to check every hotel in a city for a few dates at once.
+
+1. Type a city, state or region, or a hotel name, in City or area and choose a result. A hotel name gives the hotels near it.
+2. Optionally set Nearby hotels to add hotels within 5–50 km of the area’s center. Untick any hotel you do not want.
+3. Set Start date, Days (up to 31; 7 by default), Nights and Adults, then click Start scan.
+
+Each row is a hotel and each column an arrival date. Use Show to switch between:
+
+- Cash: lowest rate. The lowest standard rate for the stay and how many of that room are left. Green marks the lowest rate that night; ★ means a standard suite is available.
+- Cash: standard suites (points + SUA). Standard suites left, with the standard room points for that night, for booking with a Suite Upgrade Award.
+- Points. The points rate for an award type, colored by tier. Striped means no award is available.
+
+Click a column heading to sort, a hotel’s name to open its calendar for the same dates, or a date to open Hyatt’s booking page. Export CSV saves every room type for the selected hotels and dates.
+
+A city scan makes one request per hotel and date, plus two per hotel for points rates. The summary shows the estimate before you start. Results are shared with each hotel’s calendar, so dates checked in the last 6 hours are not requested again. Auto-resume works as it does for one hotel.
+
+6. Stop and resume
 ------------------
 
 Results are saved automatically in the extension’s browser storage. A new scan reuses results less than six hours old and checks missing or expired dates.
@@ -106,7 +126,7 @@ Clearing Hyatt cookies does not clear your scan results. A successful new query 
 
 Click Stop to end the scan and cancel automatic resumption. Click Start scan later to continue using any results that are still fresh. If Hyatt keeps blocking requests, the scanner may pause before retrying.
 
-6. Back up your results
+7. Back up your results
 -----------------------
 
 Open Settings from the calendar or extension menu.
@@ -120,11 +140,11 @@ Moving from the userscript
 
 Update the old userscript to version 0.13.0 or later and use its Export backup button. Disable the userscript, then import the JSON file in the extension’s Settings.
 
-Using the old local store
+Using a hryv-store service
 
-Leave Connect to hryv-store off for normal use. It is optional. Only enable it if you want to connect to the old local service; that service must be running. After enabling it, reload a Hyatt tab and select a hotel to load its saved records.
+Leave Connect to hryv-store off for normal use. It is optional. Only enable it if you run a hryv-store service at 127.0.0.1:8787, either the local service or a server collector reached through an SSH tunnel; that service must be running. After enabling it, reload a Hyatt tab and select a hotel to load its saved records.
 
-7. Update the extension
+8. Update the extension
 -----------------------
 
 1. Export a JSON backup.
@@ -134,7 +154,7 @@ Leave Connect to hryv-store off for normal use. It is optional. Only enable it i
 
 Keep the same installation folder when updating. Uninstalling the extension removes its saved data.
 
-8. Troubleshooting
+9. Troubleshooting
 ------------------
 
 The Room calendar button is missing
@@ -157,5 +177,5 @@ Hyatt blocks requests or shows an error page
 
 Auto-resume may recover a cash scan. If requests remain blocked, click Stop and try later. Cookie resets cannot resolve every block.
 
-Hyatt Room Calendar 1.2.0 · Guide updated October 17, 2026.
+Hyatt Room Calendar 1.4.0 · Guide updated October 17, 2026.
 Not affiliated with Hyatt.

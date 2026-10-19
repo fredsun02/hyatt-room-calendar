@@ -75,21 +75,22 @@
   <a class="skip" href="#guide">Skip to guide</a>
   <div class="layout">
     <aside aria-label="Guide navigation">
-      <p class="brand">Hyatt Room Calendar<span>Extension 1.2.0</span></p>
+      <p class="brand">Hyatt Room Calendar<span>Extension 1.5.0</span></p>
       <nav aria-label="Contents">
         <a href="#install"><span>01</span>Install</a>
         <a href="#scan"><span>02</span>Run your first scan</a>
         <a href="#cash"><span>03</span>Read the cash calendar</a>
         <a href="#points"><span>04</span>Check points rates</a>
-        <a href="#resume"><span>05</span>Stop and resume</a>
-        <a href="#backup"><span>06</span>Back up your results</a>
-        <a href="#update"><span>07</span>Update the extension</a>
-        <a href="#help"><span>08</span>Troubleshooting</a>
+        <a href="#city"><span>05</span>Compare hotels in a city</a>
+        <a href="#resume"><span>06</span>Stop and resume</a>
+        <a href="#backup"><span>07</span>Back up your results</a>
+        <a href="#update"><span>08</span>Update the extension</a>
+        <a href="#help"><span>09</span>Troubleshooting</a>
       </nav>
     </aside>
     <main id="guide">
       <header>
-        <div class="eyebrow">Hyatt Room Calendar · Version 1.2.0</div>
+        <div class="eyebrow">Hyatt Room Calendar · Version 1.5.0</div>
         <h1>Quick start</h1>
         <p class="lead">Check room inventory and points rates by arrival date on Hyatt.com.</p>
         <p>One extension handles scanning, saved results and cookie resets. You do not need Tampermonkey, a separate Cookie Helper, or a terminal running <code>server.mjs</code>.</p>
@@ -142,7 +143,8 @@
           <li><strong>The number</strong> is the room inventory Hyatt returned for the selected room and the full stay.</li>
           <li><strong>The background color</strong> is the standard room points tier for the arrival night, even when you select a suite.</li>
           <li><strong>A faded, striped cell with 0</strong> means no cash inventory was returned for that room and stay.</li>
-          <li><strong>·</strong> means the date has not been checked, or its cached result has expired. <strong>!</strong> means the request failed.</li>
+          <li><strong>An italic number with a small dot</strong> was checked more than six hours ago. Hover over it to see when; <strong>Start scan</strong> checks it again.</li>
+          <li><strong>·</strong> means the date has not been checked. <strong>!</strong> means the request failed.</li>
           <li><strong>Gray</strong> means the points price is unavailable. Check the number for cash inventory.</li>
         </ul>
         <div class="table-wrap">
@@ -179,8 +181,26 @@
         <p class="note"><strong>A points price does not guarantee an award room.</strong> Points availability is checked for one-night stays, independently of the Nights setting in the Cash tab.</p>
       </section>
 
+      <section id="city">
+        <h2><span class="number">05</span>Compare hotels in a city</h2>
+        <p>Choose the <strong>City</strong> tab to check every hotel in a city for a few dates at once.</p>
+        <ol>
+          <li>Type a city, state or region, or a hotel name, in <strong>City or area</strong> and choose a result. A hotel name gives the hotels near it.</li>
+          <li>Optionally set <strong>Nearby hotels</strong> to add hotels within 5–50 km of the area’s center. Untick any hotel you do not want.</li>
+          <li>Set <strong>Start date</strong>, <strong>Days</strong> (up to 31; 7 by default), <strong>Nights</strong> and <strong>Adults</strong>, then click <strong>Start scan</strong>.</li>
+        </ol>
+        <p>Each row is a hotel and each column an arrival date. Use <strong>Show</strong> to switch between:</p>
+        <ul>
+          <li><strong>Cash: lowest rate.</strong> The lowest standard rate for the stay and how many of that room are left. Green marks the lowest rate that night; ★ means a standard suite is available.</li>
+          <li><strong>Cash: standard suites (points + SUA).</strong> Standard suites left, with the standard room points for that night, for booking with a Suite Upgrade Award.</li>
+          <li><strong>Points.</strong> The points rate for an award type, colored by tier. Striped means no award is available.</li>
+        </ul>
+        <p>Click a column heading to sort, a hotel’s name to open its calendar for the same dates, or a date to open Hyatt’s booking page. <strong>Export CSV</strong> saves every room type for the selected hotels and dates.</p>
+        <p class="note"><strong>A city scan makes one request per hotel and date, plus two per hotel for points rates.</strong> The summary shows the estimate before you start. Results are shared with each hotel’s calendar, so dates checked in the last 6 hours are not requested again. Auto-resume works as it does for one hotel.</p>
+      </section>
+
       <section id="resume">
-        <h2><span class="number">05</span>Stop and resume</h2>
+        <h2><span class="number">06</span>Stop and resume</h2>
         <p>Results are saved automatically in the extension’s browser storage. A new scan reuses results less than six hours old and checks missing or expired dates.</p>
         <p>With <strong>Auto-resume</strong> enabled, blocked cash requests can trigger this sequence:</p>
         <ol>
@@ -195,7 +215,7 @@
       </section>
 
       <section id="backup">
-        <h2><span class="number">06</span>Back up your results</h2>
+        <h2><span class="number">07</span>Back up your results</h2>
         <p>Open <strong>Settings</strong> from the calendar or extension menu.</p>
         <ul>
           <li><strong>Export backup</strong> saves a JSON file with room and points data for all saved hotels.</li>
@@ -204,12 +224,12 @@
         <p>Importing keeps newer saved results and does not start a scan. Use <strong>Export CSV</strong> in the Cash tab when you want a spreadsheet export; use a JSON backup to restore data to the extension.</p>
         <h3>Moving from the userscript</h3>
         <p>Update the old userscript to version 0.13.0 or later and use its <strong>Export backup</strong> button. Disable the userscript, then import the JSON file in the extension’s Settings.</p>
-        <h3>Using the old local store</h3>
-        <p>Leave <strong>Connect to hryv-store</strong> off for normal use. It is optional. Only enable it if you want to connect to the old local service; that service must be running. After enabling it, reload a Hyatt tab and select a hotel to load its saved records.</p>
+        <h3>Using a hryv-store service</h3>
+        <p>Leave <strong>Connect to hryv-store</strong> off for normal use. It is optional. Only enable it if you run a hryv-store service at <code>127.0.0.1:8787</code>, either the local service or a server collector reached through an SSH tunnel; that service must be running. After enabling it, reload a Hyatt tab and select a hotel to load its saved records.</p>
       </section>
 
       <section id="update">
-        <h2><span class="number">07</span>Update the extension</h2>
+        <h2><span class="number">08</span>Update the extension</h2>
         <ol>
           <li>Export a JSON backup.</li>
           <li>Replace the extension files in the same installation folder.</li>
@@ -220,7 +240,7 @@
       </section>
 
       <section id="help">
-        <h2><span class="number">08</span>Troubleshooting</h2>
+        <h2><span class="number">09</span>Troubleshooting</h2>
         <h3>The Room calendar button is missing</h3>
         <p>Check that the extension is enabled and has access to Hyatt.com, then reload the Hyatt page. In an incognito window, also check <strong>Allow in Incognito</strong>.</p>
         <h3>“Done. All selected dates are cached.”</h3>
@@ -233,7 +253,7 @@
         <p>Auto-resume may recover a cash scan. If requests remain blocked, click <strong>Stop</strong> and try later. Cookie resets cannot resolve every block.</p>
       </section>
 
-      <footer>Hyatt Room Calendar 1.2.0 · Guide updated October 17, 2026.<br>Not affiliated with Hyatt.</footer>
+      <footer>Hyatt Room Calendar 1.5.0 · Guide updated October 19, 2026.<br>Not affiliated with Hyatt.</footer>
     </main>
   </div>
 </body>

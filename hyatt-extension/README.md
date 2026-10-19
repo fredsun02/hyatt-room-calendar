@@ -1,6 +1,6 @@
 # Hyatt Room Calendar
 
-Version 1.2.0 · English interface
+Version 1.5.0 · English interface
 
 View room availability and points rates on Hyatt.com.
 
@@ -26,6 +26,7 @@ Keep the same installation folder. Uninstalling the extension removes its saved 
 - The number is the room count available for the selected stay. Each date is an arrival date.
 - Background color shows the standard room points tier for the arrival night.
 - A striped, faded cell with **0** means no cash inventory was returned for that room.
+- An italic number with a small dot was checked more than 6 hours ago; hover to see when. **Start scan** checks it again.
 - **·** means not checked; **!** means the request failed.
 - The **Points** tab shows award availability separately. A points price alone does not mean an award is available.
 - **◆ Standard room** means a standard room award was found for that room in a sampled date.
@@ -40,6 +41,26 @@ Results are cached for 6 hours. A new scan checks missing or expired dates.
 
 Type part of a hotel’s name, city or code in **Find hotel** and choose a result to fill in **Hotel code**. The first search downloads Hyatt’s hotel list from its Explore Hotels page, in the language of the current Hyatt page; the list is kept for 7 days. On a non-English page, English hotel names also match. Partner hotels such as Mr & Mrs Smith are not listed. If the list cannot be loaded, enter the five-character code instead.
 
+## Compare hotels in a city
+
+The **City** tab checks every hotel in a city for a few dates and shows them side by side.
+
+1. Type a city, state or region, or a hotel name, in **City or area** and choose a result. A hotel name gives the hotels near it.
+2. Optionally set **Nearby hotels** to add hotels within 5–50 km of the area’s center. Untick hotels you do not want.
+3. Set **Start date**, **Days** (up to 31; 7 by default), **Nights** and **Adults**, then click **Start scan**.
+
+Each row is a hotel and each column an arrival date. **Show** switches the grid:
+
+- **Cash: lowest rate** shows the lowest standard rate for the stay and how many of that room are left. Green marks the lowest rate that night; ★ means a standard suite is available.
+- **Cash: standard suites (points + SUA)** shows standard suites left with the standard room points for that night, for booking with a Suite Upgrade Award.
+- **Points: …** shows the points rate for an award type, colored by tier; striped means no award is available.
+
+Click a column heading to sort, a hotel’s name to open its calendar for the same dates, or a date to open Hyatt’s booking page. **Export CSV** saves every room type for the selected hotels and dates.
+
+A city scan makes one request per hotel and date, plus two per hotel for points rates; the summary shows the estimate before you start. Results are shared with each hotel’s calendar, so dates you have already scanned, or that background collection has saved, are not requested again for 6 hours. **Auto-resume** works the same as for a single hotel and returns to the City tab after the reloads.
+
+The City tab needs hotel coordinates, so it downloads Hyatt’s hotel list once if the saved list is from an earlier version. In a translated list, a city left in English is combined with its translated name, for example 京都 / Kyoto.
+
 ## Resume a scan
 
 With **Auto-resume** enabled, blocked requests trigger a cookie reset after progress is saved. The page reloads twice, then scanning resumes. The second reload waits at least 5 seconds after the page loads; another navigation restarts the timer.
@@ -53,6 +74,20 @@ Use **Settings → Export backup** to save a JSON file. Stop active scans before
 To move data from the userscript, update the existing script to 0.13.0 or later and export a backup from its calendar. Disable the userscript, then import the file in the extension’s settings.
 
 If you already use `hryv-store`, enable **Connect to hryv-store** in Settings. Grant local access, reload a Hyatt tab and select a hotel to load its saved records. The service is optional; the extension works without it.
+
+The same setting also reads data from a hryv-store server collector forwarded to `127.0.0.1:8787` through an SSH tunnel. The service and the collector are not part of the extension. Points calendars written by the collector are used for up to 36 hours without a new request; select **Refresh rates** to check Hyatt directly.
+
+## Background collection
+
+**Settings → Background collection** keeps points calendars and cash inventory fresh for a set of hotels while Chrome is open. It needs **Connect to hryv-store**, because results are saved there.
+
+- A pinned Hyatt tab collects one request at a time through your own Hyatt session. Chrome does not discard the tab.
+- Points calendars refresh daily. Cash dates refresh daily up to 30 days out, every 3 days up to 120 days and weekly after that. Missing data comes first.
+- Collection pauses while you run a scan. When Hyatt blocks requests, it waits 5 minutes, doubling up to 2 hours. It never clears cookies.
+- The tab reloads a random hotel page about every 45 minutes.
+- To stop, turn collection off in Settings. Closing the pinned tab only pauses collection for five minutes.
+
+Choose the hotels by country code (for example `CN,HK,MO,TW,JP`) and add individual hotel codes if needed. At one request every 5 seconds, collection makes about 17,000 requests a day; Hyatt's limits apply to your browsing at the same time.
 
 ## Storage and permissions
 
